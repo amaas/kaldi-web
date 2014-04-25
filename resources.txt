@@ -1,0 +1,31 @@
+
+-Article with lots of good resources for learning node and related packages
+http://stackoverflow.com/questions/2353818/how-do-i-get-started-with-node-js
+
+-On node asynchronous design
+http://blog.shinetech.com/2011/08/26/asynchronous-code-design-with-node-js/
+
+-Building twitter app with node
+http://code.tutsplus.com/tutorials/learning-serverside-javascript-with-node-js--net-10044
+
+-Simple walkthrough of socket on node.js
+http://danielnill.com/nodejs-tutorial-with-socketio/
+
+-Possible examples of streaming audio through socket.io/node.js
+http://stackoverflow.com/questions/21031165/html5-video-audio-to-nodejs-via-socket-io-but-with-a-twist-ffmpeg
+http://stackoverflow.com/questions/8759842/how-to-stream-mp3-data-via-websockets-with-node-js-and-socket-io
+http://pedromtavares.wordpress.com/2012/12/28/streaming-audio-on-the-web-with-nodejs/
+
+-Web Audio 
+https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html
+http://www.html5rocks.com/en/tutorials/webaudio/intro/
+
+-Processing getUserMedia audio with web audio
+http://typedarray.org/from-microphone-to-wav-with-getusermedia-and-web-audio/
+http://typedarray.org/wp-content/projects/WebAudioRecorder/script.js
+
+-Resample with node
+-https://github.com/xdissent/node-resampler
+
+-Possibly useful for creating TCP socket to send kaldi data
+-http://nodejs.org/api/net.html

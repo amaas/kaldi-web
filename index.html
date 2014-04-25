@@ -1,0 +1,67 @@
+<html>
+  <head>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      var socket = io.connect('http://localhost:8080');
+      var recorder = null;
+      var volume = null;
+      var audioInput = null;
+      var audioContext = null;
+      var context = null;
+
+      if (!navigator.getUserMedia)
+	  navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia ||
+			navigator.mozGetUserMedia || navigator.msGetUserMedia;
+
+      // Setup audio collection if it exists.
+      if (navigator.getUserMedia){
+	  navigator.getUserMedia({audio:true}, listener, function(e) {
+	  alert('Error.');
+	  });
+      } else alert('getUserMedia not supported in this browser.');
+
+	  
+      function listener(e){
+	  // creates the audio context
+	  audioContext = window.AudioContext || window.webkitAudioContext;
+	  context = new audioContext();
+
+	  // creates a gain node
+	  volume = context.createGain();
+
+	  // creates an audio node from the microphone incoming stream
+	  audioInput = context.createMediaStreamSource(e);
+
+	  // connect the stream to the gain node
+	  audioInput.connect(volume);
+
+	  var bufferSize = 2048;
+	  recorder = context.createJavaScriptNode(bufferSize, 2, 2);
+
+	  recorder.onaudioprocess = function(e){
+	      var numC = e.inputBuffer.numberOfChannels; // number of channels (e.g. stereo)
+	      var sampleRate = e.inputBuffer.sampleRate; // sample rate
+	      console.log(sampleRate); // check sample rate
+	      var left = e.inputBuffer.getChannelData (0);
+	      var right = e.inputBuffer.getChannelData (1);
+
+
+	      // Merge stereo to mono, simple averaging.
+	      for (var i = 0; i < e.inputBuffer.length; i++) {
+		left[i] = (left[i]+right[i])/2.0
+	      }
+
+	      // Send the data over socket
+	      socket.emit('left',{'left':left})
+	  }
+
+	  // Connect the recorder
+	  volume.connect (recorder);
+	  recorder.connect (context.destination); 
+      }
+    </script>
+  </head>
+  <body>
+    Some writing.
+  </body>
+</html>

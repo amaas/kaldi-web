@@ -1,0 +1,27 @@
+<html>
+  <head></head>
+<body>
+  I'm Listening. Simple example of getting audio data from mic and playing it
+  back (should work in Chrome/Mozilla).
+  <audio autoplay></audio>
+<script>
+
+window.URL = window.URL || window.webkitURL;
+
+var audio = document.querySelector('audio');
+
+navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia 
+			 || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+
+navigator.getUserMedia(
+  {audio : true, video: false}, 
+  function (stream) {
+    audio.src = window.URL.createObjectURL(stream);
+  }, 
+  function (e) {
+    console.log('Error:',e)
+  });
+
+</script>
+</body>
+</html>

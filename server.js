@@ -32,6 +32,16 @@ var server = http.createServer(function(req,rep){
         rep.end();
       });
       break;
+    case '/audio_sample.html':
+      fs.readFile(__dirname+"/audio_sample.html", function(error,data){
+        if (error) {
+          console.log('error');
+        }
+        rep.writeHead(200, {'Content-Type':'text/html'});
+        rep.write(data, 'utf8');
+        rep.end();
+      });
+      break;
     case '/video.html':
       fs.readFile(__dirname+"/video.html", function(error,data){
         if (error) {
@@ -42,7 +52,28 @@ var server = http.createServer(function(req,rep){
         rep.end();
       });
       break;
+    case '/recorder.js':
+      fs.readFile(__dirname+"/recorder.js", function(error,data){
+        if (error) {
+          console.log('error');
+        }
+        rep.writeHead(200, {'Content-Type':'text/javascript'});
+        rep.write(data, 'utf8');
+        rep.end();
+      });
+      break;
+    case '/recorderWorker.js':
+      fs.readFile(__dirname+"/recorderWorker.js", function(error,data){
+        if (error) {
+          console.log('error');
+        }
+        rep.writeHead(200, {'Content-Type':'text/javascript'});
+        rep.write(data, 'utf8');
+        rep.end();
+      });
+      break;
     default:
+      console.log("default path");
       rep.writeHead(404);
       rep.write("opps this doesn't exist - 404");
       break;

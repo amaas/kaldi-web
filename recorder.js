@@ -67,13 +67,16 @@
     worker.onmessage = function(e){
       var blob = e.data;
       currCallback(blob);
+
+      forceDownload(blob, "test_output.wav");
     }
 
     source.connect(this.node);
     this.node.connect(this.context.destination);    //this should not be necessary
   };
 
-  Recorder.forceDownload = function(blob, filename){
+  // downloads the wav data to filename
+  var forceDownload = function(blob, filename){
     var url = (window.URL || window.webkitURL).createObjectURL(blob);
     var link = window.document.createElement('a');
     link.href = url;

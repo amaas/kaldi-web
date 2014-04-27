@@ -40,7 +40,7 @@ function exportWAV(type){
   var dataview = encodeWAV(interleaved);
   var audioBlob = new Blob([dataview], { type: type });
 
-  this.postMessage(audioBlob);
+  this.postMessage(audioBlob); // located in recorder.js "worker.onMessage"
 }
 
 function getBuffer() {

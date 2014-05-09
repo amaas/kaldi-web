@@ -4,6 +4,7 @@
   <body>
     <audio controls autoplay></audio>
     <script type="text/javascript" src="recorder.js"> </script>
+    <script type="text/javascript" src="resampler.js"> </script>
 
     <input onclick="startRecording()" type="button" value="start recording" />
     <input onclick="stopRecording()" type="button" value="stop recording and play" />
@@ -42,6 +43,16 @@
         recorder.exportWAV(function(s) {
           audio.src = window.URL.createObjectURL(s);
         });
+        // recorder.getBuffer(function(s) {
+        //     var buffer = s;            
+        //     var resamplerObj = new Resampler(24000, 16000, 1, buffer.length, false);
+        //     var resampledBuffer = resamplerObj.resampler(buffer);
+        //     recorder.exportDownsampledWAV(function(s) {
+        //       console.log("hello");
+        //       audio.src = window.URL.createObjectURL(s);
+        //     }, resampledBuffer);
+        // });
+
       }
     </script>
   </body>

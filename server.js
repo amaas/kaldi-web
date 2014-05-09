@@ -62,6 +62,16 @@ var server = http.createServer(function(req,rep){
         rep.end();
       });
       break;
+    case '/resampler.js':
+      fs.readFile(__dirname+"/resampler.js", function(error,data){
+        if (error) {
+          console.log('error');
+        }
+        rep.writeHead(200, {'Content-Type':'text/javascript'});
+        rep.write(data, 'utf8');
+        rep.end();
+      });
+      break;
     case '/recorderWorker.js':
       fs.readFile(__dirname+"/recorderWorker.js", function(error,data){
         if (error) {

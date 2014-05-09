@@ -14,6 +14,9 @@ this.onmessage = function(e){
     case 'exportWAV':
       exportWAV(e.data.type);
       break;
+    case 'exportDownsampledWAV':
+      exportWAVFromDownsampled(e.data.type, e.data.buffer);
+      break;
     case 'getBuffer':
       getBuffer();
       break;
@@ -44,10 +47,18 @@ function exportWAV(type){
 }
 
 function getBuffer() {
-  var buffers = [];
-  buffers.push( mergeBuffers(recBuffersL, recLength) );
-  buffers.push( mergeBuffers(recBuffersR, recLength) );
-  this.postMessage(buffers);
+  var bufferL = mergeBuffers(recBuffersL, recLength);
+  var bufferR = mergeBuffers(recBuffersR, recLength);
+  var interleavedMonoBuffer = interleaveMono(bufferL, bufferR);
+  this.postMessage(interleavedMonoBuffer);
+}
+
+function exportWAVFromDownsampled(type, interleavedBuffer) {
+  console.log(interleavedBuffer);
+  var dataview = encodeDownsampledWAV(interleavedBuffer);
+  var audioBlob = new Blob([dataview], { type: type });
+
+  this.postMessage(audioBlob); // located in recorder.js "worker.onMessage"
 }
 
 function clear(){
@@ -78,6 +89,13 @@ function interleave(inputL, inputR){
     result[index++] = inputR[inputIndex];
     inputIndex++;
   }
+  return result;
+}
+
+function interleaveMono(inputL, inputR){
+  var result = new Float32Array(inputL.length);
+  for (var i = 0; i < inputL.length; ++i)
+    result[i] = 0.5 * (inputL[i] + inputR[i]);
   return result;
 }
 
@@ -112,6 +130,42 @@ function encodeWAV(samples){
   view.setUint16(20, 1, true);
   /* channel count */
   view.setUint16(22, 2, true);
+  /* sample rate */
+  view.setUint32(24, sampleRate, true);
+  /* byte rate (sample rate * block align) */
+  view.setUint32(28, sampleRate * 4, true);
+  /* block align (channel count * bytes per sample) */
+  view.setUint16(32, 4, true);
+  /* bits per sample */
+  view.setUint16(34, 16, true);
+  /* data chunk identifier */
+  writeString(view, 36, 'data');
+  /* data chunk length */
+  view.setUint32(40, samples.length * 2, true);
+
+  floatTo16BitPCM(view, 44, samples);
+
+  return view;
+}
+
+function encodeDownsampledWAV(samples){
+  var buffer = new ArrayBuffer(44 + samples.length * 2);
+  var view = new DataView(buffer);
+  sampleRate = 32000; // This is what kaldi needs
+  /* RIFF identifier */
+  writeString(view, 0, 'RIFF');
+  /* file length */
+  view.setUint32(4, 32 + samples.length * 2, true);
+  /* RIFF type */
+  writeString(view, 8, 'WAVE');
+  /* format chunk identifier */
+  writeString(view, 12, 'fmt ');
+  /* format chunk length */
+  view.setUint32(16, 16, true);
+  /* sample format (raw) */
+  view.setUint16(20, 1, true);
+  /* channel count */
+  view.setUint16(22, 1, true);
   /* sample rate */
   view.setUint32(24, sampleRate, true);
   /* byte rate (sample rate * block align) */

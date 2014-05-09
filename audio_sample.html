@@ -44,7 +44,8 @@
           audio.src = window.URL.createObjectURL(s);
         });
         // recorder.getBuffer(function(s) {
-        //     var buffer = s;            
+        //     var buffer = s;
+        //     // TODO: Don't assume 48000 to start but rather sampleRate/2            
         //     var resamplerObj = new Resampler(24000, 16000, 1, buffer.length, false);
         //     var resampledBuffer = resamplerObj.resampler(buffer);
         //     recorder.exportDownsampledWAV(function(s) {

@@ -1,4 +1,5 @@
-//JavaScript Audio Resampler (c) 2011 - Grant Galitz
+// JavaScript Audio Resampler (c) 2011 - Grant Galitz
+// https://github.com/grantgalitz/XAudioJS/blob/0a233b743f11371d97b72153a5a223ac16a88748/resampler.js
 function Resampler(fromSampleRate, toSampleRate, channels, outputBufferSize, noReturn) {
 	this.fromSampleRate = fromSampleRate;
 	this.toSampleRate = toSampleRate;

@@ -1,3 +1,5 @@
+// Adapted from: https://github.com/mattdiamond/Recorderjs
+// With additions by Alex Popof - May 2014
 (function(window){
   var WORKER_PATH = 'recorderWorker.js';
 

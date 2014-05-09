@@ -1,3 +1,6 @@
+// Adapted from: https://github.com/mattdiamond/Recorderjs
+// With additions by Alex Popof - May 2014
+
 var recLength = 0,
   recBuffersL = [],
   recBuffersR = [],

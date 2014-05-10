@@ -14,8 +14,8 @@
         console.log('Rejected!', e);
       };
 
+      var context = new webkitAudioContext();
       var onSuccess = function(s) {
-        var context = new webkitAudioContext();
         var mediaStreamSource = context.createMediaStreamSource(s);
         recorder = new Recorder(mediaStreamSource);
         recorder.record();
@@ -40,19 +40,22 @@
 
       function stopRecording() {
         recorder.stop();
-        recorder.exportWAV(function(s) {
-          audio.src = window.URL.createObjectURL(s);
+        
+        recorder.getBuffer(function(s) {
+            // return value holds interleaved stereo audio data at mic's sample rate (44.1 or 48 kHz)
+            // "interleaved": indices alternate between left and right channels
+            var buffer = s;
+            var sampleRateFromMic = context.sampleRate;
+            // resample input stereo to 16khz stereo
+            // Resample args: inputRate, outputRate, numChannels, length of buffer, noReturn boolean
+            // since we want the returned value, no return is set to false          
+            var resamplerObj = new Resampler(sampleRateFromMic, 16000, 2, buffer.length, false);
+            var resampledBuffer = resamplerObj.resampler(buffer);
+            // convert stereo to mono and export
+            recorder.exportDownsampledWAV(function(s) {
+              audio.src = window.URL.createObjectURL(s);
+            }, resampledBuffer);
         });
-        // recorder.getBuffer(function(s) {
-        //     var buffer = s;
-        //     // TODO: Don't assume 48000 to start but rather sampleRate/2            
-        //     var resamplerObj = new Resampler(24000, 16000, 1, buffer.length, false);
-        //     var resampledBuffer = resamplerObj.resampler(buffer);
-        //     recorder.exportDownsampledWAV(function(s) {
-        //       console.log("hello");
-        //       audio.src = window.URL.createObjectURL(s);
-        //     }, resampledBuffer);
-        // });
 
       }
     </script>

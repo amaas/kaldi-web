@@ -52,13 +52,13 @@ function exportWAV(type){
 function getBuffer() {
   var bufferL = mergeBuffers(recBuffersL, recLength);
   var bufferR = mergeBuffers(recBuffersR, recLength);
-  var interleavedMonoBuffer = interleaveMono(bufferL, bufferR);
-  this.postMessage(interleavedMonoBuffer);
+  var interleavedBuffer = interleave(bufferL, bufferR);
+  this.postMessage(interleavedBuffer);
 }
 
 function exportWAVFromDownsampled(type, interleavedBuffer) {
-  console.log(interleavedBuffer);
-  var dataview = encodeDownsampledWAV(interleavedBuffer);
+  monoBuffer = stereoToMono(interleavedBuffer);
+  var dataview = encodeDownsampledWAV(monoBuffer);
   var audioBlob = new Blob([dataview], { type: type });
 
   this.postMessage(audioBlob); // located in recorder.js "worker.onMessage"
@@ -95,10 +95,22 @@ function interleave(inputL, inputR){
   return result;
 }
 
-function interleaveMono(inputL, inputR){
-  var result = new Float32Array(inputL.length);
-  for (var i = 0; i < inputL.length; ++i)
-    result[i] = 0.5 * (inputL[i] + inputR[i]);
+// convert a stereo buffer to mono
+// Input: Sample1L, Sample1R, Sample2L, Sample2R, ...
+// Output: Sample1Avg, Sample2Avg, ...
+// Note: this does NOT change sampling rate
+function stereoToMono(buffer) {
+  var old_length = buffer.length;
+  var new_length = Math.ceil(old_length * 0.5);
+  var result = new Float32Array(new_length);
+  var new_index = 0;
+  for (var i = 0; i < old_length; i += 2) {
+    var left_val = buffer[i];
+    var right_val = buffer[i+1];
+    var avg = 0.5 * (left_val + right_val);
+    result[new_index] = avg;
+    new_index++;
+  }
   return result;
 }
 
@@ -115,6 +127,8 @@ function writeString(view, offset, string){
   }
 }
 
+/* This method is the original wav encoding function used
+to output stereo audio from the mic (no downsampling) */
 function encodeWAV(samples){
   var buffer = new ArrayBuffer(44 + samples.length * 2);
   var view = new DataView(buffer);
@@ -140,7 +154,7 @@ function encodeWAV(samples){
   /* block align (channel count * bytes per sample) */
   view.setUint16(32, 4, true);
   /* bits per sample */
-  view.setUint16(34, 16, true);
+  view.setUint16(34, 16, true); // 16/8 = 2 bytes/sample
   /* data chunk identifier */
   writeString(view, 36, 'data');
   /* data chunk length */
@@ -151,10 +165,13 @@ function encodeWAV(samples){
   return view;
 }
 
+/* This method is the custom method I used to export a wav that should
+be acceptable to kaldi */
+/* Good resource on WAV format: http://mathmatrix.narod.ru/Wavefmt.html */
 function encodeDownsampledWAV(samples){
   var buffer = new ArrayBuffer(44 + samples.length * 2);
   var view = new DataView(buffer);
-  sampleRate = 32000; // This is what kaldi needs
+  sampleRate = 16000; // This is what kaldi needs; we have already downsampled
   /* RIFF identifier */
   writeString(view, 0, 'RIFF');
   /* file length */
@@ -172,11 +189,11 @@ function encodeDownsampledWAV(samples){
   /* sample rate */
   view.setUint32(24, sampleRate, true);
   /* byte rate (sample rate * block align) */
-  view.setUint32(28, sampleRate * 4, true);
-  /* block align (channel count * bytes per sample) */
-  view.setUint16(32, 4, true);
+  view.setUint32(28, sampleRate * 2, true);
+  /* block align (channel count * bytes per sample) = 1 * 2 = 2 */
+  view.setUint16(32, 2, true);
   /* bits per sample */
-  view.setUint16(34, 16, true);
+  view.setUint16(34, 16, true); // 16/8 = 2 bytes/sample
   /* data chunk identifier */
   writeString(view, 36, 'data');
   /* data chunk length */

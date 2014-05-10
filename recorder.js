@@ -82,7 +82,7 @@
       var blob = e.data;
       currCallback(blob);
 
-      forceDownload(blob, "test_output.wav");
+      forceDownload(blob, "output.wav");
     }
 
     source.connect(this.node);

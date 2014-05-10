@@ -32,8 +32,8 @@ var server = http.createServer(function(req,rep){
         rep.end();
       });
       break;
-    case '/audio_sample.html':
-      fs.readFile(__dirname+"/audio_sample.html", function(error,data){
+    case '/new_index.html':
+      fs.readFile(__dirname+"/new_index.html", function(error,data){
         if (error) {
           console.log('error');
         }

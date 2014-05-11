@@ -10,14 +10,15 @@ window.URL = window.URL || window.webkitURL;
 
 var audio = document.querySelector('audio');
 
-navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia 
-			 || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia
+|| navigator.mozGetUserMedia || navigator.msGetUserMedia;
 
 navigator.getUserMedia(
-  {audio : true, video: false}, 
+  {audio : true, video: false},
   function (stream) {
+    console.log("audio success");
     audio.src = window.URL.createObjectURL(stream);
-  }, 
+  },
   function (e) {
     console.log('Error:',e)
   });

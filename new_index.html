@@ -1,0 +1,63 @@
+<!-- A sample where you can record your voice and it can be played back -->
+<!-- Source: http://codeartists.com/post/36746402258/how-to-record-audio-in-chrome-with-native-html5-apis -->
+<html>
+  <body>
+    <audio controls autoplay></audio>
+    <script type="text/javascript" src="recorder.js"> </script>
+    <script type="text/javascript" src="resampler.js"> </script>
+
+    <input onclick="startRecording()" type="button" value="start recording" />
+    <input onclick="stopRecording()" type="button" value="stop recording and play" />
+
+    <script>
+      var onFail = function(e) {
+        console.log('Rejected!', e);
+      };
+
+      var context = new webkitAudioContext();
+      var onSuccess = function(s) {
+        var mediaStreamSource = context.createMediaStreamSource(s);
+        recorder = new Recorder(mediaStreamSource);
+        recorder.record();
+
+        // audio loopback
+        // mediaStreamSource.connect(context.destination);
+      }
+
+      window.URL = window.URL || window.webkitURL;
+      navigator.getUserMedia  = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+
+      var recorder;
+      var audio = document.querySelector('audio');
+
+      function startRecording() {
+        if (navigator.getUserMedia) {
+          navigator.getUserMedia({audio: true}, onSuccess, onFail);
+        } else {
+          console.log('navigator.getUserMedia not present');
+        }
+      }
+
+      function stopRecording() {
+        recorder.stop();
+        
+        recorder.getBuffer(function(s) {
+            // return value holds interleaved stereo audio data at mic's sample rate (44.1 or 48 kHz)
+            // "interleaved": indices alternate between left and right channels
+            var buffer = s;
+            var sampleRateFromMic = context.sampleRate;
+            // resample input stereo to 16khz stereo
+            // Resample args: inputRate, outputRate, numChannels, length of buffer, noReturn boolean
+            // since we want the returned value, no return is set to false          
+            var resamplerObj = new Resampler(sampleRateFromMic, 16000, 2, buffer.length, false);
+            var resampledBuffer = resamplerObj.resampler(buffer);
+            // convert stereo to mono and export
+            recorder.exportDownsampledWAV(function(s) {
+              audio.src = window.URL.createObjectURL(s);
+            }, resampledBuffer);
+        });
+
+      }
+    </script>
+  </body>
+</html>

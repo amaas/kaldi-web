@@ -7,6 +7,8 @@ var fs = require('fs');
 var url = require('url');
 var fs = require('fs');
 
+var exec = require('child_process').exec, child;
+
 var server = http.createServer(function(req,rep){
   console.log('connection');
   var path = url.parse(req.url).pathname;
@@ -80,6 +82,17 @@ var server = http.createServer(function(req,rep){
         rep.writeHead(200, {'Content-Type':'text/javascript'});
         rep.write(data, 'utf8');
         rep.end();
+      });
+      break;
+    case '/child':
+      // sample invocation of command line process (wc)
+      child = exec('wc recorder.js',
+        function (error, stdout, stderr) {
+          console.log('stdout: ' + stdout);
+          console.log('stderr: ' + stderr);
+          if (error !== null) {
+            console.log('exec error: ' + error);
+          }
       });
       break;
     default:

@@ -145,15 +145,7 @@ io.sockets.on('connection',function (socket) {
   });
   socket.on('wav', function (data) {
     fs.writeFile('test.wav', data.str, 'binary');
-  });
-  socket.on('data', function (data) {
-    console.log(data.url)
-    var xmlHttp = null;
-    var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
-    xmlHttp = new XMLHttpRequest();
-    xmlHttp.open( "GET", data.url, false );
-    xmlHttp.send( null );
-    return xmlHttp.responseText;
+    socket.emit("decode", {'result': 'sample output'});
   });
 });
 

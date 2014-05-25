@@ -101,7 +101,7 @@ var server = http.createServer(function(req,rep){
     // execute_all: fetches complete output
     // execute_online: receives output as streams
     case '/execute_all':
-      exec('wc recorder.js',
+      exec('bash ../example.sh',
         function (error, stdout, stderr) {
           console.log('stdout: ' + stdout);
           if (error !== null) {
@@ -114,7 +114,7 @@ var server = http.createServer(function(req,rep){
       break;
     case '/execute_online':
       // command and its list of args
-      var child = spawn('wc', ['recorderWorker.js', '-l']);
+      var child = spawn('bash', ['../example.sh']);
       child.stdout.on('data', function(chunk) {
         var returnedText = chunk.toString();
         // need to parse buffer data bytes into ascii
@@ -145,7 +145,13 @@ io.sockets.on('connection',function (socket) {
   });
   socket.on('wav', function (data) {
     fs.writeFile('test.wav', data.str, 'binary');
-    socket.emit("decode", {'result': 'sample output'});
+    var child = spawn('bash', ['../example.sh']);
+      child.stdout.on('data', function(chunk) {
+        var returnedText = chunk.toString();
+        // need to parse buffer data bytes into ascii
+        console.log(returnedText);
+	socket.emit("decode", {'result': returnedText});
+    });
   });
 });
 

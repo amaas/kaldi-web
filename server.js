@@ -24,6 +24,7 @@ var server = http.createServer(function(req,rep){
         rep.end();
       });
       break;
+    // example of writing to a file using fs
     case '/write':
       fs.writeFile("./test.txt", "Hey there!", function(err) {
         if(err) {
@@ -145,11 +146,13 @@ io.sockets.on('connection',function (socket) {
   });
   socket.on('wav', function (data) {
     fs.writeFile('test.wav', data.str, 'binary');
+    // run the kaldi decode script
     var child = spawn('bash', ['../example.sh']);
       child.stdout.on('data', function(chunk) {
-        var returnedText = chunk.toString();
         // need to parse buffer data bytes into ascii
+        var returnedText = chunk.toString();
         console.log(returnedText);
+        // send back to html file to display for user
 	socket.emit("decode", {'result': returnedText});
     });
   });

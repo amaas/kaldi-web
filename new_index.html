@@ -11,6 +11,7 @@
     <input onclick="stopRecording()" type="button" value="stop recording and play" />
 
     <script>
+      // NOTE: This must be changed for your IP
       var socket = io.connect('54.224.56.134:8080');
 
       socket.on('decode', function (data) {
@@ -69,7 +70,7 @@
             reader.onloadend = function () {
               socket.emit('wav',{'str':reader.result})
             }
-
+            // send binary to server where it will save and decode
             reader.readAsBinaryString(s);
             
           }, resampledBuffer);

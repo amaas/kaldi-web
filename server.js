@@ -7,6 +7,9 @@ var fs = require('fs');
 var url = require('url');
 var fs = require('fs');
 
+var exec = require('child_process').exec;
+var spawn = require('child_process').spawn;
+
 var server = http.createServer(function(req,rep){
   console.log('connection');
   var path = url.parse(req.url).pathname;
@@ -81,6 +84,34 @@ var server = http.createServer(function(req,rep){
         rep.write(data, 'utf8');
         rep.end();
       });
+      break;
+    // sample invocations of command line process (wc)
+    // http://stackoverflow.com/questions/20643470/execute-a-command-line-binary-in-node-js
+    // execute_all: fetches complete output
+    // execute_online: receives output as streams
+    case '/execute_all':
+      exec('wc recorder.js',
+        function (error, stdout, stderr) {
+          console.log('stdout: ' + stdout);
+          if (error !== null) {
+            console.log('exec error: ' + error);
+          }
+      });
+      rep.writeHead(200, {'Content-Type':'text/html'});
+      rep.write("<html><body>Executing command ... fetch complete output</body></html>");
+      rep.end();
+      break;
+    case '/execute_online':
+      // command and its list of args
+      var child = spawn('wc', ['recorderWorker.js', '-l']);
+      child.stdout.on('data', function(chunk) {
+        var returnedText = chunk.toString();
+        // need to parse buffer data bytes into ascii
+        console.log(returnedText);
+      });
+      rep.writeHead(200, {'Content-Type':'text/html'});
+      rep.write("<html><body>Executing command ... fetch in chunks</body></html>");
+      rep.end();
       break;
     default:
       console.log("default path");

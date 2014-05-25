@@ -6,11 +6,13 @@
     <audio controls autoplay></audio>
     <script type="text/javascript" src="recorder.js"> </script>
     <script type="text/javascript" src="resampler.js"> </script>
-
+    <script src="/socket.io/socket.io.js"></script>
     <input onclick="startRecording()" type="button" value="start recording" />
     <input onclick="stopRecording()" type="button" value="stop recording and play" />
 
     <script>
+      var socket = io.connect('http://localhost:8080');
+      
       var onFail = function(e) {
         console.log('Rejected!', e);
       };
@@ -25,6 +27,7 @@
         // mediaStreamSource.connect(context.destination);
       }
 
+      
       window.URL = window.URL || window.webkitURL;
       navigator.getUserMedia  = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
 
@@ -54,10 +57,19 @@
             var resampledBuffer = resamplerObj.resampler(buffer);
             // convert stereo to mono and export
             recorder.exportDownsampledWAV(function(s) {
-              audio.src = window.URL.createObjectURL(s);
-            }, resampledBuffer);
-        });
+            src = window.URL.createObjectURL(s);
+            
+            audio.src = src;
+            var reader = new FileReader();
 
+            reader.onloadend = function () {
+              socket.emit('wav',{'str':reader.result})
+            }
+
+            reader.readAsBinaryString(s);
+            
+          }, resampledBuffer);
+        });
       }
     </script>
   </body>

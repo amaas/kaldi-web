@@ -5,7 +5,6 @@ var http = require('http');
 var io = require('socket.io');
 var fs = require('fs');
 var url = require('url');
-var fs = require('fs');
 
 var exec = require('child_process').exec;
 var spawn = require('child_process').spawn;
@@ -24,6 +23,18 @@ var server = http.createServer(function(req,rep){
         rep.write(data, 'utf8');
         rep.end();
       });
+      break;
+    case '/write':
+      fs.writeFile("./test.txt", "Hey there!", function(err) {
+        if(err) {
+            console.log(err);
+        } else {
+            console.log("The file was saved!");
+        }
+      });
+      rep.writeHead(200, {'Content-Type':'text/html'});
+      rep.write("<html><body>Writng</body></html>");
+      rep.end();
       break;
     case '/audio.html':
       fs.readFile(__dirname+"/audio.html", function(error,data){
@@ -130,7 +141,19 @@ io.set('log level', 1);
 
 io.sockets.on('connection',function (socket) {
   socket.on('left', function (data) {
-    console.log(data.left)
+    console.log(data.left);
+  });
+  socket.on('wav', function (data) {
+    fs.writeFile('test.wav', data.str, 'binary');
+  });
+  socket.on('data', function (data) {
+    console.log(data.url)
+    var xmlHttp = null;
+    var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
+    xmlHttp = new XMLHttpRequest();
+    xmlHttp.open( "GET", data.url, false );
+    xmlHttp.send( null );
+    return xmlHttp.responseText;
   });
 });
 

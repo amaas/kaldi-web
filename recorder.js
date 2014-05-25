@@ -81,7 +81,6 @@
     worker.onmessage = function(e){
       var blob = e.data;
       currCallback(blob);
-
       forceDownload(blob, "output.wav");
     }
 

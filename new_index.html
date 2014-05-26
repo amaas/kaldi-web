@@ -57,7 +57,7 @@
             var sampleRateFromMic = context.sampleRate;
             // resample input stereo to 16khz stereo
             // Resample args: inputRate, outputRate, numChannels, length of buffer, noReturn boolean
-            // since we want the returned value, no return is set to false          
+            // since we want the returned value, noReturn is set to false          
             var resamplerObj = new Resampler(sampleRateFromMic, 16000, 2, buffer.length, false);
             var resampledBuffer = resamplerObj.resampler(buffer);
             // convert stereo to mono and export
@@ -65,12 +65,13 @@
             src = window.URL.createObjectURL(s);
             
             audio.src = src;
-            var reader = new FileReader();
 
+            // convert blob to binary data so can send over socket
+            var reader = new FileReader();
             reader.onloadend = function () {
               socket.emit('wav',{'str':reader.result})
             }
-            // send binary to server where it will save and decode
+            // send binary string to server where it will save wav locally and decode
             reader.readAsBinaryString(s);
             
           }, resampledBuffer);

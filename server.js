@@ -1,5 +1,4 @@
-/* Starts server on 8080, opens socket and waits for 'left' event. On 'left'
- * writes audio data to console. Dependencies : socket.io */
+/* Dependencies : socket.io */
 
 var http = require('http');
 var io = require('socket.io');
@@ -155,8 +154,13 @@ io.set('log level', 1);
 
 io.sockets.on('connection',function (socket) {
   // used in index.html
-  socket.on('left', function (data) {
-    console.log(data.left);
+  socket.on('data', function (data) {
+    //console.log(data.audio);
+    console.log(data.rate);
+    // take the sound data
+    // call command line process for sox to downsample it to 16KHz
+    // take output and run a .sh script to call the appropriate kaldi methods
+    
   });
   //used in new_index.html
   socket.on('wav', function (data) {
@@ -168,7 +172,7 @@ io.sockets.on('connection',function (socket) {
       var returnedText = chunk.toString();
       console.log(returnedText);
       // send back to html file to display for user
-	    socket.emit("decode", {'result': returnedText});
+      socket.emit("decode", {'result': returnedText});
     });
   });
 });

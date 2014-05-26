@@ -2,7 +2,8 @@
   <head>
     <script src="/socket.io/socket.io.js"></script>
     <script>
-      var socket = io.connect('http://localhost:8080');
+      // NOTE: use current IP
+      var socket = io.connect('54.81.15.171:8080');
       
       var recorder = null;
       var volume = null;
@@ -42,18 +43,17 @@
 		  recorder.onaudioprocess = function(e){
 		      var numC = e.inputBuffer.numberOfChannels; // number of channels (e.g. stereo)
 		      var sampleRate = e.inputBuffer.sampleRate; // sample rate
-		      console.log(sampleRate); // check sample rate
 		      var left = e.inputBuffer.getChannelData (0);
 		      var right = e.inputBuffer.getChannelData (1);
 
 
-		      // Merge stereo to mono, simple averaging.
+		      // Merge stereo to mono, simple averaging: this will be the frequency of the mic (44/48 KHz)
 		      for (var i = 0; i < e.inputBuffer.length; i++) {
 				left[i] = (left[i]+right[i])/2.0
 		      }
 
 		      // Send the data over socket
-		      socket.emit('left',{'left':left})
+		      socket.emit('data',{'audio':left, 'rate':sampleRate});
 		  }
 
 		  // Connect the recorder

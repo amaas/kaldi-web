@@ -14,15 +14,16 @@
         <input id="stop" onclick="stopRecording()" type="button" disabled="disabled" value="stop recording and play" />
       </div>
       <h4>Output Text from Kaldi:</h4>
-      <div style="width:400px;height:100px;border:2px solid blue;"></div>
+      <div style="width:400px;height:100px;border:2px solid blue;" id="kaldi-output"></div>
     </div>
 
     <script>
       // NOTE: This must be changed for your IP
       var socket = io.connect('54.81.15.171:8080');
-
-      socket.on('decode', function (data) {
-        alert(data.result);
+      var output_elem = document.getElementById("kaldi-output");
+      socket.on('decode', function (data) {        
+        var current = output_elem.innerHTML;
+        output_elem.innerHTML = current + data.result;
       });
       
       var onFail = function(e) {
@@ -48,6 +49,7 @@
 
       function startRecording() {
         if (navigator.getUserMedia) {
+          output_elem.innerHTML = "";
           navigator.getUserMedia({audio: true}, onSuccess, onFail);
           document.getElementById("start").disabled = true;
           document.getElementById("stop").disabled = false;

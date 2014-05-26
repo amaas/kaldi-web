@@ -3,12 +3,19 @@
 <!-- Adapted by Alex Popof for CS 224S - May 2014 -->
 <html>
   <body>
+    <div align="center">
+    <h1>Welcome to Kaldi Web Client</h1>
     <audio controls autoplay></audio>
     <script type="text/javascript" src="recorder.js"> </script>
     <script type="text/javascript" src="resampler.js"> </script>
     <script src="/socket.io/socket.io.js"></script>
-    <input onclick="startRecording()" type="button" value="start recording" />
-    <input onclick="stopRecording()" type="button" value="stop recording and play" />
+      <div> 
+        <input id="start" onclick="startRecording()" type="button" value="start recording" />
+        <input id="stop" onclick="stopRecording()" type="button" disabled="disabled" value="stop recording and play" />
+      </div>
+      <h4>Output Text from Kaldi:</h4>
+      <div style="width:400px;height:100px;border:2px solid blue;"></div>
+    </div>
 
     <script>
       // NOTE: This must be changed for your IP
@@ -42,12 +49,16 @@
       function startRecording() {
         if (navigator.getUserMedia) {
           navigator.getUserMedia({audio: true}, onSuccess, onFail);
+          document.getElementById("start").disabled = true;
+          document.getElementById("stop").disabled = false;
         } else {
           console.log('navigator.getUserMedia not present');
         }
       }
 
       function stopRecording() {
+        document.getElementById("start").disabled = false;
+        document.getElementById("stop").disabled = true;
         recorder.stop();
         
         recorder.getBuffer(function(s) {

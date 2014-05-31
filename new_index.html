@@ -19,7 +19,7 @@
 
     <script>
       // NOTE: This must be changed for your IP
-      var socket = io.connect('54.81.15.171:8080');
+      var socket = io.connect('54.224.243.134:8080');
       var output_elem = document.getElementById("kaldi-output");
       socket.on('decode', function (data) {        
         var current = output_elem.innerHTML;

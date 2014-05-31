@@ -153,27 +153,43 @@ io = io.listen(server);
 io.set('log level', 1);
 
 io.sockets.on('connection',function (socket) {
-  // used in index.html
-  socket.on('data', function (data) {
-    //console.log(data.audio);
-    console.log(data.rate);
-    // take the sound data
-    // call command line process for sox to downsample it to 16KHz
-    // take output and run a .sh script to call the appropriate kaldi methods
+    // used in index.html   
+    socket.on('data', function (data) {
+	//data is a dictionary
+	//data.audio holds the sound array
+	//console.log(data.audio);
+	//data.rate holds the sample rate of the mic
+	console.log(data.rate);
+	console.log("passing to sox");
+	// take the sound data
+	// call command line process for sox to downsample it to 16KHz
+	// take output and run a .sh script to call the appropriate kaldi methods
     
-  });
-  //used in new_index.html
-  socket.on('wav', function (data) {
-    fs.writeFile('test.wav', data.str, 'binary');
-    // run the kaldi decode script
-    var child = spawn('bash', ['../example.sh']);
-    child.stdout.on('data', function(chunk) {
-      // need to parse buffer data bytes into ascii
-      var returnedText = chunk.toString();
-      console.log(returnedText);
-      // send back to html file to display for user
-      socket.emit("decode", {'result': returnedText});
+	//pipe?
+	var child1 = spawn('bash',['sox - -b 16 - rate 16k']);
+    
+	child1.on('data', function (data){
+	    child2.stdin.write(data);
+	    console.log("passing to example.sh");
+	});
+	child1.stdin.write(data.audio);
+	//sox returns downsampled array of sound
+
+	//call the script that holds
     });
-  });
+    
+    //used in new_index.html
+    socket.on('wav', function (data) {
+	fs.writeFile('test.wav', data.str, 'binary');
+	// run the kaldi decode script
+	var child = spawn('bash', ['../example.sh']);
+	child.stdout.on('data', function(chunk) {
+	    // need to parse buffer data bytes into ascii
+	    var returnedText = chunk.toString();
+	    console.log(returnedText);
+	    // send back to html file to display for user
+	    socket.emit("decode", {'result': returnedText});
+	});
+    });
 });
 

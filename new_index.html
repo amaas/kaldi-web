@@ -82,7 +82,8 @@
             // convert blob to binary data so can send over socket
             var reader = new FileReader();
             reader.onloadend = function () {
-              socket.emit('wav',{'str':reader.result})
+      console.log('wav');        
+      socket.emit('wav',{'str':reader.result});
             }
             // send binary string to server where it will save wav locally and decode
             reader.readAsBinaryString(s);

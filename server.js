@@ -89,11 +89,12 @@ var server = http.createServer(function(req,rep){
       break;
     case '/execute_online':
       // command and its list of args
-      var child = spawn('bash', ['../example.sh']);
+      var child = spawn('bash',['../example.sh'] );
       child.stdout.on('data', function(chunk) {
         var returnedText = chunk.toString();
         // need to parse buffer data bytes into ascii
         console.log(returnedText);
+	console.log(chunk.length());
       });
       rep.writeHead(200, {'Content-Type':'text/html'});
       rep.write("<html><body>Executing command ... fetch in chunks</body></html>");
@@ -154,6 +155,59 @@ io.set('log level', 1);
 
 io.sockets.on('connection',function (socket) {
     // used in index.html   
+    var child1 = spawn('sox',['-r', '44100', '-t', 'raw','-e','unsigned-integer','-b', '16','-','-r', '16k','-t', 'raw','-e', 'unsigned-integer','-b','16','-']);
+    var child2 = spawn('bash', ['../example2.sh']);
+    // Error handling for process termination
+    child1.on('close', function (code) {
+        if (code !== 0) {
+            console.log('child1 process exited with code ' + code);
+        }
+        child2.stdin.end();
+    });
+    child2.on('close', function (code) {
+        if (code !== 0) {
+            console.log('child2 process exited with code ' + code);
+        }
+    });
+    
+    child1.stderr.on('data', function (data) {
+        console.log(' stderr: ' + data);
+    });
+    child2.stderr.on('data', function (data) {
+	console.log(' stderr2: ' + data);
+    });
+    // Here comes the pipeline
+    // Get the sound as floats between -1 and 1, scale to 16 bits unsigned i.e. 0 ... 65535
+    //     build a buffer of bytes, i.e. high end byte, low end byte
+    //     turn it into a string using code cribbed from the web and pass it to sox
+    socket.on('data', function (data) {
+        console.log(data.rate);
+        console.log("passing to sox");
+        console.log(data.audio);
+        // take the sound data
+        var sendthis = data.audio;
+        var packedform = [];
+        for (x in sendthis) {
+            var byte = 32767 * sendthis[x] + 32768;
+            var hi = (byte & 0xff00) >> 8;
+            var lo = byte & 0xff;
+            packedform.push(hi);
+            packedform.push(lo);
+        }
+        child1.stdin.write(String.fromCharCode.apply(null, packedform));
+    });
+
+    child1.stdout.on('data', function (data){
+        child2.stdin.write(data);
+        console.log("passing to example.sh");
+    });
+    child2.stdout.on('data', function(chunk) {
+          // need to parse buffer data bytes into ascii                                                                                              
+          var returnedText = chunk.toString();
+          console.log(returnedText);
+          // send back to html file to display for user                                                                                              
+          socket.emit("decode", {'result': returnedText});
+    });
     socket.on('data', function (data) {
 	//data is a dictionary
 	//data.audio holds the sound array
@@ -165,14 +219,8 @@ io.sockets.on('connection',function (socket) {
 	// call command line process for sox to downsample it to 16KHz
 	// take output and run a .sh script to call the appropriate kaldi methods
     
-	//pipe?
-	var child1 = spawn('bash',['sox - -b 16 - rate 16k']);
-    
-	child1.on('data', function (data){
-	    child2.stdin.write(data);
-	    console.log("passing to example.sh");
-	});
-	child1.stdin.write(data.audio);
+	//pipe?;
+	child1.stdin.write(data.audio.toString());
 	//sox returns downsampled array of sound
 
 	//call the script that holds

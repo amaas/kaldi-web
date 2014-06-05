@@ -1,6 +1,7 @@
 <!-- A sample where you can record your voice and it can be played back -->
 <!-- Original source: http://codeartists.com/post/36746402258/how-to-record-audio-in-chrome-with-native-html5-apis -->
-<!-- Adapted by Alex Popof for CS 224S - May 2014 -->
+<!-- By offline we mean that the entire voice sample is recorded before decoding -->
+<!-- Adapted by Alex Popof for CS 224S at Stanford - June 2014 -->
 <html>
   <body>
     <div align="center">
@@ -19,7 +20,7 @@
 
     <script>
       // NOTE: This must be changed for your IP
-      var socket = io.connect('54.224.243.134:8080');
+      var socket = io.connect('54.225.44.44:8080');
       var output_elem = document.getElementById("kaldi-output");
       socket.on('decode', function (data) {        
         var current = output_elem.innerHTML;
@@ -82,8 +83,8 @@
             // convert blob to binary data so can send over socket
             var reader = new FileReader();
             reader.onloadend = function () {
-      console.log('wav');        
-      socket.emit('wav',{'str':reader.result});
+            console.log('wav file created...sending to server');        
+            socket.emit('wav',{'str':reader.result});
             }
             // send binary string to server where it will save wav locally and decode
             reader.readAsBinaryString(s);
